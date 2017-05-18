@@ -145,6 +145,10 @@ findex$sdate<- ymd(findex$sdate)
 findexsummer2016<-findex[which(findex$sdate>='2016-06-01'&findex$sdate<'2016-09-01'),]
 findexsummer2016lg<-findexsummer2016[,c(1:13,15)]
 findexsummer2016lg<-melt(findexsummer2016lg,id=c("sdate","index"))
+findexsummeravggage<-colMeans(findexsummer2016[,1:12],na.rm=TRUE)
+findexsummeravggage<-melt(findexsummeravggage)
+findexsummeravggage$gage<-row.names(findexsummeravggage)
+
 
 findex$syear<- substr(findex$sdate,1,4)
 findex$smonth<- substr(findex$sdate,6,7)
@@ -153,13 +157,18 @@ findexsummeravg<-aggregate(findexsummer$index,list(findexsummer$syear),mean)
 colnames(findexsummeravg)<-c("Year","Index")
 
 
+ggplot(findexsummeravggage,aes(gage,value))+
+  geom_bar(stat="identity")+
+  labs(y="Average streamflow Index",title="Average summer (June - August) least disturbed streamflow index 2016")+
+  theme_light()
+
 ggplot(findexsummeravg,aes(Year,Index))+
   geom_bar(stat="identity")+
   labs(y="Average streamflow Index",title="Average summer (June - August) least disturbed streamflow index")+
   theme_light()
   
 
-ggplot(findexsummer2016lg,aes(sdate,index))+
+ggplot(findexsummer2016,aes(sdate,index))+
   geom_line(colour="red",size=1.5)+
   labs(y="Average streamflow index",x="2016",title="Least Disturbed Flow Index Summer 2016")+
   scale_y_continuous(limits=c(1,7),breaks=c(1,2,3,4,5,6,7),labels=c("Dry  1",2,3,"Normal  4",5,6,"Wet  7"))+
@@ -169,5 +178,7 @@ ggplot(findexsummer2016lg, aes(sdate,value,colour=variable))+
   geom_line()+
   labs(y="Streamflow Index",x="2016",title="Least Disturbed Flow Index by Gage Summer 2016")+
   theme(legend.title=element_blank())
+
+
 
                 
