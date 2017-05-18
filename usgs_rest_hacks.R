@@ -1,8 +1,9 @@
 library(data.table)
 library(ggplot2)
 library(lubridate)
+library(reshape2)
 
-setwd("/Users/tbecker/Documents/Projects/2017/FlowImpairment")
+setwd("P:/Projects/GitHub_Prj/FlowImpair")
 indexgage<-read.csv("usgsindexgage.csv",header=TRUE)
 indexgage$SiteNumber<-paste("0",indexgage$SiteNumber,sep="")
 
@@ -20,6 +21,11 @@ parse_fstat<-function(fstat_lines,skip='#',delim='\t'){
     D[i-x-1,1:length(r)]<-r;
   }
   D
+}
+
+#character string from right
+substrRight <- function(x, n){
+  substr(x, nchar(x)-n+1, nchar(x))
 }
 
 #build one site flow fstats index
@@ -72,30 +78,24 @@ get_sfindex<-function(site,base_url,start_date,end_date,parameterCd){
   # 6 = > 90th percentile
   # 7 = Highest ever for the date at a streamgage
   
-  flowstat$index<- ifelse(flowstat[,5]==flowstat$min_va,1,
-                          ifelse(flowstat[,5]<=flowstat$p10_va &
-                                   flowstat[,5]>flowstat$min_va,2,
-                                 ifelse(flowstat[,5]>flowstat$p10_va & 
-                                          flowstat[,5]<=flowstat$p25_va,3,
-                                        ifelse(flowstat[,5]>flowstat$p25_va &
-                                                 flowstat[,5]<=flowstat$p75,4,
-                                               ifelse(flowstat[,5]>flowstat$p75 &
-                                                        flowstat[,5]<=flowstat$p90,5,
-                                                      ifelse(flowstat[,5]>flowstat$p90 &
-                                                               flowstat[,5]<flowstat$max_va,6,
-                                                             ifelse(flowstat[,5]==flowstat$max_va,7,NA)))))))
+  flowstat$index<- ifelse(flowstat$q==flowstat$min_va,1,
+                          ifelse(flowstat$q<=flowstat$p10_va &
+                                   flowstat$q>flowstat$min_va,2,
+                                 ifelse(flowstat$q>flowstat$p10_va & 
+                                          flowstat$q<=flowstat$p25_va,3,
+                                        ifelse(flowstat$q>flowstat$p25_va &
+                                                 flowstat$q<=flowstat$p75,4,
+                                               ifelse(flowstat$q>flowstat$p75 &
+                                                        flowstat$q<=flowstat$p90,5,
+                                                      ifelse(flowstat$q>flowstat$p90 &
+                                                               flowstat$q<flowstat$max_va,6,
+                                                             ifelse(flowstat$q==flowstat$max_va,7,NA)))))))
   
   sfindex<-data.frame(flowstat$datetime,flowstat$index)
   colnames(sfindex)<-c("datetime",site)
   sfindex #return the sfindex
 }
 
-
-
-#character string from right
-substrRight <- function(x, n){
-  substr(x, nchar(x)-n+1, nchar(x))
-}
 
 #reused parameters here
 base_url    <-'https://waterservices.usgs.gov/nwis';
@@ -134,16 +134,40 @@ for(i in 1:n){#for each datetime
   }
 }
 
+findex<-as.data.frame(E)
+findex$index<-rowMeans(findex,na.rm=TRUE)     #only run if first time run, if index exists will include in avg
+findex$gagecnt<-(rowSums(!is.na(findex)))-1  #only run -1 if first time run, if gagecnt already exists than -2
+
 ##############################################################################################
-E$year<- substr(row.names(E),1,4)
+findex$sdate<- row.names(findex)
+findex$sdate<- ymd(findex$sdate)
 
-flowstat2016<-flowstat[which(flowstat$year=="2016"),]
-flowstat2016summer<-flowstat2016[which(flowstat2016$month_nu>5&flowstat2016$month_nu<9),]
-flowstat2016summer$datetime<- ymd(flowstat2016summer$datetime)
+findexsummer2016<-findex[which(findex$sdate>='2016-06-01'&findex$sdate<'2016-09-01'),]
+findexsummer2016lg<-findexsummer2016[,c(1:13,15)]
+findexsummer2016lg<-melt(findexsummer2016lg,id=c("sdate","index"))
 
-ggplot(flowstat2016summer,aes(datetime,index))+
+findex$syear<- substr(findex$sdate,1,4)
+findex$smonth<- substr(findex$sdate,6,7)
+findexsummer<-findex[which(findex$smonth=='06'|findex$smonth=='07'|findex$smonth=='08'),]
+findexsummeravg<-aggregate(findexsummer$index,list(findexsummer$syear),mean)
+colnames(findexsummeravg)<-c("Year","Index")
+
+
+ggplot(findexsummeravg,aes(Year,Index))+
+  geom_bar(stat="identity")+
+  labs(y="Average streamflow Index",title="Average summer (June - August) least disturbed streamflow index")+
+  theme_light()
+  
+
+ggplot(findexsummer2016lg,aes(sdate,index))+
+  geom_line(colour="red",size=1.5)+
+  labs(y="Average streamflow index",x="2016",title="Least Disturbed Flow Index Summer 2016")+
+  scale_y_continuous(limits=c(1,7),breaks=c(1,2,3,4,5,6,7),labels=c("Dry  1",2,3,"Normal  4",5,6,"Wet  7"))+
+  theme_light()
+
+ggplot(findexsummer2016lg, aes(sdate,value,colour=variable))+
   geom_line()+
-  labs(y="streamflow index",x="date",title="Pendelton Hill Summer 2016")+
-  ylim(1,7)
+  labs(y="Streamflow Index",x="2016",title="Least Disturbed Flow Index by Gage Summer 2016")+
+  theme(legend.title=element_blank())
 
                 
