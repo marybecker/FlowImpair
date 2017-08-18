@@ -159,6 +159,7 @@ colnames(findexsummeravg)<-c("Year","Index")
 
 ggplot(findexsummeravggage,aes(gage,value))+
   geom_bar(stat="identity")+
+  ylim(0,7)+
   labs(y="Average streamflow Index",title="Average summer (June - August) least disturbed streamflow index 2016")+
   theme_light()
 
