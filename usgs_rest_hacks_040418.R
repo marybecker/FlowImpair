@@ -156,13 +156,16 @@ findex$gagecnt<-(rowSums(!is.na(findex)))-1  #only run -1 if first time run, if 
 findex$sdate<- row.names(findex)
 findex$sdate<- ymd(findex$sdate)
 
+findexlng<-melt(findex,id.vars=c("sdate","gagecnt"))##Convert findex from wide to long
+write.csv(findexlng,"findexlng2017.csv")
+
 #######Average SF Index Least Disturbed#####################
 rects <- data.frame(ystart = c(-Inf,3,5), 
                     yend = c(3,5,Inf), 
                     cat = c("low flow","normal","high"),
                     col=c("blue","purple","green"))
 
-xstart <- min(findex$sdate)-30
+xstart <- min(findex$sdate)-30  ##Specified for plot to ensure rects coverage
 xend <- max(findex$sdate)+30
 
 p<- ggplot()+
@@ -173,6 +176,30 @@ p<- ggplot()+
 p + geom_rect(data=rects,aes(xmin=xstart,xmax=xend,
                            ymin = ystart, ymax = yend),alpha = 0.3,fill=rects$col)+
     coord_cartesian(xlim=with(findex,range(sdate)))
+
+#######Average SF Index Least Disturbed RG BioP#####################
+findexRG<- findex
+findexRG$month<- substr(findexRG$sdate,6,7)
+findexRG<- findexRG[which(findexRG$month=="07"|findexRG$month=="08"|
+                            findexRG$month=="09"|findexRG$month=="10"),]
+
+rects <- data.frame(ystart = c(-Inf,3,5), 
+                    yend = c(3,5,Inf), 
+                    cat = c("low flow","normal","high"),
+                    col=c("blue","purple","green"))
+
+xstart <- min(findexRG$sdate)-30  ##Specified for plot to ensure rects coverage
+xend <- max(findexRG$sdate)+30
+
+p<- ggplot()+
+  geom_line(data=findexRG, aes(sdate,index))+
+  labs(y="",x="",title="Flow Conditions At 12 Least Disturbed Gages 
+       during Rearing and Growth Bioperiod 2017")+
+  scale_y_continuous(limits=c(1,7),breaks=c(2,4,6),labels=c("Low","Normal","High"))
+
+p + geom_rect(data=rects,aes(xmin=xstart,xmax=xend,
+                             ymin = ystart, ymax = yend),alpha = 0.3,fill=rects$col)+
+  coord_cartesian(xlim=with(findexRG,range(sdate)))
 
 #######SF Index Individual Gage#####################
 gage<-'01188000'
