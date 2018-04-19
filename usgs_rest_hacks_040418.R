@@ -2,7 +2,7 @@ library(ggplot2)
 library(lubridate)
 library(reshape2)
 
-setwd("P:/Projects/GitHub_Prj/FlowImpair")
+setwd("")
 indexgage<-read.csv("usgsindexgage.csv",header=TRUE)
 indexgage$SiteNumber<-paste("0",indexgage$SiteNumber,sep="")
 
@@ -163,15 +163,17 @@ write.csv(findexlng,"findexlng2017.csv")
 rects <- data.frame(ystart = c(-Inf,3,5), 
                     yend = c(3,5,Inf), 
                     cat = c("low flow","normal","high"),
-                    col=c("blue","purple","green"))
+                    col=c("white","gray30","gray85"))
 
 xstart <- min(findex$sdate)-30  ##Specified for plot to ensure rects coverage
 xend <- max(findex$sdate)+30
 
 p<- ggplot()+
       geom_line(data=findex, aes(sdate,index))+
+      geom_line(data=findexRG, aes(sdate,index,size=1))+
       labs(y="",x="",title="Flow Conditions At 12 Least Disturbed Gages 2017")+
-      scale_y_continuous(limits=c(1,7),breaks=c(1,4,7),labels=c("Low","Normal","High"))
+      scale_y_continuous(limits=c(1,7),breaks=c(2,4,6),labels=c("Low","Normal","High"))+
+      theme(legend.position="none")
 
 p + geom_rect(data=rects,aes(xmin=xstart,xmax=xend,
                            ymin = ystart, ymax = yend),alpha = 0.3,fill=rects$col)+
