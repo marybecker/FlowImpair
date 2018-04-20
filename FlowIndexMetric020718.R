@@ -1,4 +1,4 @@
-setwd("")
+setwd("P:/Projects/GitHub_Prj/FlowImpair")
 
 library(ggplot2)
 library(lubridate)
@@ -8,6 +8,8 @@ library(reshape2)
 
 fobs<-read.csv("data/TrailCam_FlowObs2017.csv",header=TRUE)
 fobs$Date<-make_date(year=fobs$Year,month=fobs$Month,day=fobs$Day)
+fobs$JDay<-yday(fobs$Date)
+fobs$DurObs<-ifelse(fobs$Obs>3,1,0)
 #fobs<- fobs[complete.cases(fobs),]
 #fobs$ObsGraph<- fobs$Obs-1
 #fobs$Obs_CAT<-factor(fobs$Obs_CAT,levels=c("Dry","No Flow","Low","Normal","Above Normal","Flood"))
@@ -19,7 +21,7 @@ sites<- unique(fobs$STA_SEQ) ##list of stations
 site.name<-fobs[,1:2]
 site.name<-unique(site.name[c("STA_SEQ","Station_Name")])
 colnames(site.name)<-c("site","SName")
-flowmetric<- matrix(ncol=23,nrow=length(sites)) #Empty matrix for flow metrics
+flowmetric<- matrix(ncol=31,nrow=length(sites)) #Empty matrix for flow metrics
 
 #####RUN FLOW METRICS For All Sites################
 ####################################
@@ -27,7 +29,7 @@ flowmetric<- matrix(ncol=23,nrow=length(sites)) #Empty matrix for flow metrics
 for (i in 1:length(sites)){
 
 site <- fobs[which(fobs$STA_SEQ==sites[i]),]
-site$DurObs<-ifelse(site$Obs>3,1,0)
+site <- site[order(site$JDay),]
 
 ##Magnitude####
 MA<- mean(site$Obs)
@@ -78,13 +80,29 @@ G4F1<- nrow(site[which(site$index>3&site$Obs==1),])
 G4F2<- nrow(site[which(site$index>3&site$Obs==2),])
 G4F3<- nrow(site[which(site$index>3&site$Obs==3),])
 G4FL<- nrow(site[which(site$index>4&site$Obs<4),])
+G4FPL<- (nrow(site[which(site$index>4&site$Obs<4),]))/(dim(site)[1])
 
+GNF1<- nrow(site[which(site$ngindex>3&site$Obs==1),])
+GNF2<- nrow(site[which(site$ngindex>3&site$Obs==2),])
+GNF3<- nrow(site[which(site$ngindex>3&site$Obs==3),])
+GNFL<- nrow(site[which(site$ngindex>4&site$Obs<4),])
+GNFPL<- (nrow(site[which(site$ngindex>4&site$Obs<4),]))/(dim(site)[1])
+
+###Timing###
+
+T1<- site[match(0,site$DurObs),]
+T1<- as.numeric(T1['JDay'])
+
+T2<- site[match(1,site$Obs),]
+T2<- as.numeric(T2['JDay'])
 
 #######Combine together
 flowmetric[i,]<- rbind(MA,M50,M25,M75,MASept,M50Sept,
                        D1,D2,D3,D4,DL,DN,
                        F1,F2,F3,F4,FL,FN,FPL,
-                       G4F1,G4F2,G4F3,G4FL)
+                       G4F1,G4F2,G4F3,G4FL,G4FPL,
+                       GNF1,GNF2,GNF3,GNFL,GNFPL,
+                       T1,T2)
 }
 
 ###########Make dataframe#################################
@@ -92,7 +110,9 @@ flowmetric<- as.data.frame(flowmetric,row.names=sites)
 colnames(flowmetric)<-c("MA","M50","M25","M75","MASept","M50Sept",
                         "D1","D2","D3","D4","DL","DN",
                         "F1","F2","F3","F4","FL","FN","FPL",
-                        "G4F1","G4F2","G4F3","G4FL")
+                        "G4F1","G4F2","G4F3","G4FL","G4FPL",
+                        "GNF1","GNF2","GNF3","GNFL","GNFPL",
+                        "T1","T2")
 flowmetric$site<- row.names(flowmetric)
 flowmetric<-merge(flowmetric,site.name,by="site")
 flowmetric$site<-factor(flowmetric$site,levels=c("19657","19460","15244",
@@ -101,6 +121,7 @@ flowmetric$site<-factor(flowmetric$site,levels=c("19657","19460","15244",
 flowmetric$SName<-factor(flowmetric$SName,levels=c("Bunnell Brook","Cobble Brook Trib","Cobble Brook",
                                                  "Womenshenuck Brook","Chidsey Brook","Mill River",
                                                  "Honeypot Brook US","Honeypot Brook DS"))
+write.csv(flowmetric,"flowmetrics.csv")
 
 ####################################################################################
 
@@ -218,35 +239,91 @@ p18<- ggplot(flowmetric,aes(x=SName,y=FN))+
   theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.75)),
         plot.title=element_text(size=rel(1)))
 
-p23<- ggplot(flowmetric,aes(x=SName,y=FPL))+
+p19<- ggplot(flowmetric,aes(x=SName,y=FPL))+
   geom_bar(stat="identity")+
   labs(title="Percent of Disconnected, No Flow or Dry Days - R&G",y="Percent of Days - R&G")+
   theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.75)),
         plot.title=element_text(size=rel(1)))
 
 ##Frequency compared to reference gages Plots##
-p19<- ggplot(flowmetric,aes(x=SName,y=G4F1))+
+p20<- ggplot(flowmetric,aes(x=SName,y=G4F1))+
   geom_bar(stat="identity")+
   labs(title="Count of Dry Days - Reference Gages > 25th Percentile Flow",y="Days")+
   theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.75)),
         plot.title=element_text(size=rel(1)))
 
-p20<- ggplot(flowmetric,aes(x=SName,y=G4F2))+
+p21<- ggplot(flowmetric,aes(x=SName,y=G4F2))+
   geom_bar(stat="identity")+
   labs(title="Count of No Flow Days - Reference Gages > 25th Percentile Flow",y="Days")+
   theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.75)),
         plot.title=element_text(size=rel(1)))
 
-p21<- ggplot(flowmetric,aes(x=SName,y=G4F3))+
+p22<- ggplot(flowmetric,aes(x=SName,y=G4F3))+
   geom_bar(stat="identity")+
   labs(title="Count of Disconnected Days - Reference Gages > 25th Percentile Flow",y="Days")+
   theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.75)),
         plot.title=element_text(size=rel(1)))
 
-p22<- ggplot(flowmetric,aes(x=SName,y=G4FL))+
+p23<- ggplot(flowmetric,aes(x=SName,y=G4FL))+
   geom_bar(stat="identity")+
   labs(title="Count of Disconnected, No Flow or Dry Days - Reference Gages > 25th Percentile Flow",
        y="Days")+
+  theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.75)),
+        plot.title=element_text(size=rel(1)))
+
+p24<- ggplot(flowmetric,aes(x=SName,y=G4FPL))+
+  geom_bar(stat="identity")+
+  labs(title="Percent of Disconnected, No Flow or Dry Days - Reference Gages > 25th Percentile Flow",
+       y="Percent of Days - R&G")+
+  theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.75)),
+        plot.title=element_text(size=rel(1)))
+
+##Frequency compared to closest reference gages Plots##
+p25<- ggplot(flowmetric,aes(x=SName,y=GNF1))+
+  geom_bar(stat="identity")+
+  labs(title="Count of Dry Days - Nearby Reference Gages > 25th Percentile Flow",y="Days")+
+  theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.75)),
+        plot.title=element_text(size=rel(1)))
+
+p26<- ggplot(flowmetric,aes(x=SName,y=GNF2))+
+  geom_bar(stat="identity")+
+  labs(title="Count of No Flow Days - Nearby Reference Gages > 25th Percentile Flow",y="Days")+
+  theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.75)),
+        plot.title=element_text(size=rel(1)))
+
+p27<- ggplot(flowmetric,aes(x=SName,y=GNF3))+
+  geom_bar(stat="identity")+
+  labs(title="Count of Disconnected Days - Nearby Reference Gages > 25th Percentile Flow",y="Days")+
+  theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.75)),
+        plot.title=element_text(size=rel(1)))
+
+p28<- ggplot(flowmetric,aes(x=SName,y=GNFL))+
+  geom_bar(stat="identity")+
+  labs(title="Count of Disconnected, No Flow or Dry Days - Nearby Reference Gages > 25th Percentile Flow",
+       y="Days")+
+  theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.75)),
+        plot.title=element_text(size=rel(1)))
+
+p29<- ggplot(flowmetric,aes(x=SName,y=GNFPL))+
+  geom_bar(stat="identity")+
+  labs(title="Percent of Disconnected, No Flow or Dry Days - Nearby Reference Gages > 25th Percentile Flow",
+       y="Percent of Days - R&G")+
+  theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.75)),
+        plot.title=element_text(size=rel(1)))
+
+##Timing##
+
+p30<- ggplot(flowmetric,aes(x=SName,y=T1))+
+  geom_bar(stat="identity")+
+  labs(title="Julian Day of First Disconnected, No Flow or Dry Days Observation",
+       y="Julian Day")+
+  theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.75)),
+        plot.title=element_text(size=rel(1)))
+
+p31<- ggplot(flowmetric,aes(x=SName,y=T2))+
+  geom_bar(stat="identity")+
+  labs(title="Julian Day of First Dry Day Observation",
+       y="Julian Day")+
   theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.75)),
         plot.title=element_text(size=rel(1)))
 
@@ -306,17 +383,28 @@ multiplot(p16,p17,cols=1)
 dev.off()
 
 pdf(file="Frequencyplots3.pdf",width=11,height=8)
-multiplot(p18,p23,cols=1)
+multiplot(p18,p19,cols=1)
 dev.off()
 
 pdf(file="GageFrequencyplots1.pdf",width=11,height=8)
-multiplot(p19,p20,cols=1)
+multiplot(p20,p21,p22,cols=1)
 dev.off()
 
 pdf(file="GageFrequencyplots2.pdf",width=11,height=8)
-multiplot(p21,p22,cols=1)
+multiplot(p23,p24,cols=1)
 dev.off()
 
+pdf(file="NGageFrequencyplots1.pdf",width=11,height=8)
+multiplot(p25,p26,p27,cols=1)
+dev.off()
+
+pdf(file="NGageFrequencyplots2.pdf",width=11,height=8)
+multiplot(p28,p29,cols=1)
+dev.off()
+
+pdf(file="Timing.pdf",width=11,height=8)
+multiplot(p30,p31,cols=1)
+dev.off()
 
 
 
