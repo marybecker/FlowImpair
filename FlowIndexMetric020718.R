@@ -406,6 +406,27 @@ pdf(file="Timing.pdf",width=11,height=8)
 multiplot(p30,p31,cols=1)
 dev.off()
 
+#############Scaled Metric Plot Heatmap##########################
+#################################################################
+
+fmh<- flowmetric[,c("DN","FPL","G4FPL","MA")]
+#fmh<-as.data.frame(t(fmh))
+row.names(fmh)<-flowmetric$SName
+
+fmh[,1]<-1-(fmh[,1]/123)
+fmh[,2]<-fmh[,2]
+fmh[,4]<-ifelse((1-(fmh[,4]/4))<0,0,(1-(fmh[,4]/4)))
+fmh<- as.matrix(fmh)
+
+library(lattice)
+levelplot(fmh,at=seq(0,1,0.1),
+          col.regions=terrain.colors(100),scales=list(cex=0.4),
+          xlab="Flow Metric",ylab="Sites",main="Metrics Scaled 0 - 1(Little Flow Impact to Highly Flow Impacted)")
+
+
+
+
+
 
 
 
