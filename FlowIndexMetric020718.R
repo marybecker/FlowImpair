@@ -46,19 +46,19 @@ durvalue<- dur$lengths[dur$values==1] ## the run with a particular value 1
 D1<- mean(durvalue)  ##the average duration of days
 
 dur<-rle(site$Obs)  ##calculate the total runs in a sequence
-durvalue<- dur$lengths[dur$values==2] ## the run with a particular value 1
+durvalue<- dur$lengths[dur$values==2] ## the run with a particular value 2
 D2<- mean(durvalue)  ##the average duration of days
 
 dur<-rle(site$Obs)  ##calculate the total runs in a sequence
-durvalue<- dur$lengths[dur$values==3] ## the run with a particular value 1
+durvalue<- dur$lengths[dur$values==3] ## the run with a particular value 3
 D3<- mean(durvalue)  ##the average duration of days
 
 dur<-rle(site$Obs)  ##calculate the total runs in a sequence
-durvalue<- dur$lengths[dur$values==4] ## the run with a particular value 1
+durvalue<- dur$lengths[dur$values==4] ## the run with a particular value 4
 D4<- mean(durvalue)  ##the average duration of days
 
 dur<-rle(site$DurObs)  ##calculate the total runs in a sequence
-durvalue<- dur$lengths[dur$values==0] ## the run with a particular value 1
+durvalue<- dur$lengths[dur$values==0] ## the run with a particular value 0
 DL<- mean(durvalue)  ##the average duration of days
 
 dur<-rle(site$DurObs)  ##calculate the total runs in a sequence
@@ -409,12 +409,12 @@ dev.off()
 #############Scaled Metric Plot Heatmap##########################
 #################################################################
 
-fmh<- flowmetric[,c("DN","FPL","G4FPL","MA")]
+fmh<- flowmetric[,c("DN","F1","G4FPL","MA")]
 #fmh<-as.data.frame(t(fmh))
 row.names(fmh)<-flowmetric$SName
 
 fmh[,1]<-1-(fmh[,1]/123)
-fmh[,2]<-fmh[,2]
+fmh[,2]<-fmh[,2]/123
 fmh[,4]<-ifelse((1-(fmh[,4]/4))<0,0,(1-(fmh[,4]/4)))
 fmh<- as.matrix(fmh)
 
@@ -424,7 +424,56 @@ levelplot(fmh,at=seq(0,1,0.1),
           xlab="Flow Metric",ylab="Sites",main="Metrics Scaled 0 - 1(Little Flow Impact to Highly Flow Impacted)")
 
 
+#########For Paper##############################################
+################################################################
 
+flowmetric<-flowmetric[c(1:6,8),]
+
+p1<- ggplot(flowmetric,aes(x=SName,y=MA))+
+  geom_bar(stat="identity")+
+  labs(title="Magnitude Metric - Average Flow Category",y="Category")+
+  theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.6)),
+        plot.title=element_text(size=rel(0.6)),axis.text.x=element_blank(),
+        axis.title.y=element_text(size=rel(0.6)))+
+  annotate("text", x=0.75,y=4.5,label="A",size=3)
+
+p30<- ggplot(flowmetric,aes(x=SName,y=T1))+
+  geom_bar(stat="identity")+
+  labs(title="Timing Metric - Julian Day of First Disconnected, No Flow or Dry Days Observation",
+       y="Julian Day")+
+  theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.3)),
+        plot.title=element_text(size=rel(0.6)),axis.text.x=element_blank(),
+        axis.title.y=element_text(size=rel(0.6)))+
+  annotate("text", x=0.75,y=225,label="B",size=3)
+
+p9<- ggplot(flowmetric,aes(x=SName,y=D3))+
+  geom_bar(stat="identity")+
+  labs(title="Duration Metric - Mean Duration of Consecutive Disconnected Days",y="Days")+
+  theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.6)),
+        plot.title=element_text(size=rel(0.6)),axis.text.x=element_blank(),
+        axis.title.y=element_text(size=rel(0.6)))+
+  annotate("text", x=0.75,y=5,label="C",size=3)
+
+p19<- ggplot(flowmetric,aes(x=SName,y=FPL))+
+  geom_bar(stat="identity")+
+  labs(title="Frequency Metric - Percent of Disconnected, No Flow or Dry Days",y="Percent of Days - R&G")+
+  theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.3)),
+        plot.title=element_text(size=rel(0.6)),axis.text.x=element_blank(),
+        axis.title.y=element_text(size=rel(0.6)))+
+  annotate("text", x=0.75,y=0.6,label="D",size=3)
+
+p27<- ggplot(flowmetric,aes(x=SName,y=GNF3))+
+  geom_bar(stat="identity")+
+  labs(title="Frequency Gage Metric - Count of Disconnected Days - Nearby Reference Gages > 25th Percentile Flow",y="Days")+
+  theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.5)),
+        plot.title=element_text(size=rel(0.6)),
+        axis.title.y=element_text(size=rel(0.6)))+
+  annotate("text", x=0.75,y=20,label="E",size=3)
+
+
+tiff(file="ExampleMetrics.tiff",width=1600,height=2000,res=300)
+multiplot(p1,p30,p9,p19,p27,cols=1)
+dev.off()
 
 
 
