@@ -20,10 +20,6 @@ parse_fstat<-function(fstat_lines,skip='#',delim='\t'){
   D
 }
 
-#character string from right
-substrRight <- function(x, n){
-  substr(x, nchar(x)-n+1, nchar(x))
-}
 
 #####Includes active daily value gages################
 site_url<-'https://waterservices.usgs.gov/nwis/site/?format=rdb&stateCd=ct&siteType=ST&siteStatus=active&hasDataTypeCd=dv'
@@ -31,14 +27,17 @@ sites<-parse_fstat(readLines(site_url))
 sites<- sites[!is.na(sites$site_no),]
 sites<-sites[1:70,]#Can't figure out why keeping SID
 
-
-sdist<-data.frame(dist_M=double(),site_no=character(),STA_SEQ=numeric(),stringsAsFactors=FALSE)
-sdistmin<-data.frame(dist_M=double(),site_no=character(),STA_SEQ=numeric(),stringsAsFactors=FALSE)
+indexgage<-read.csv("usgsindexgage.csv",header=TRUE)
+indexgage$site_no<-paste("0",indexgage$site_no,sep="")
 
 
 ####Calculate geodesic distance (WGS84)#######################
 ####Stores closest gage based on min dist######################
 ####Does not take into account drainage add at later date######
+
+#Empty dataframe
+sdist<-data.frame(dist_M=double(),site_no=character(),STA_SEQ=numeric(),stringsAsFactors=FALSE)
+sdistmin<-data.frame(dist_M=double(),site_no=character(),STA_SEQ=numeric(),stringsAsFactors=FALSE)
 
 for(j in 1:dim(camsites)[1]){
 
@@ -60,3 +59,42 @@ for (i in 1:dim(sites)[1])  {
 sdistmin<-merge(sdistmin,camsites,by="STA_SEQ")
 sdistmin<-merge(sdistmin,sites,byx="site_no")
 write.csv(sdistmin,"sdistmin.csv",row.names=FALSE)
+
+
+####Calculate geodesic distance (WGS84)#######################
+####Stores closest REFERENCE gage based on min dist######################
+
+#Empty dataframe
+rsdist<-data.frame(dist_M=double(),site_no=character(),STA_SEQ=numeric(),stringsAsFactors=FALSE)
+rsdistmin<-data.frame(dist_M=double(),site_no=character(),STA_SEQ=numeric(),stringsAsFactors=FALSE)
+
+for(j in 1:dim(camsites)[1]){
+  
+  for (i in 1:dim(indexgage)[1])  {
+    
+    sx<-as.numeric(indexgage[i,c(5,6)])
+    sy<-as.numeric(camsites[j,c(4,3)])
+    d<-distm(sx,sy)
+    rsdist[i,1]<-d
+    rsdist[i,2]<-indexgage[i,1]
+    rsdist[i,3]<-camsites$STA_SEQ[j]
+    #write.csv(sdist,paste0("sdist",camsites$STA_SEQ[j],".csv"))
+  }
+  
+  rsdistmin[j,]<-rsdist[rsdist$dist_M==min(rsdist$dist_M,na.rm=TRUE),]
+  
+}
+
+rsdistmin<-merge(rsdistmin,camsites,by="STA_SEQ")
+rsdistmin<-merge(rsdistmin,indexgage,by.x="site_no",by.y="SiteNumber")
+write.csv(rsdistmin,"rsdistmin.csv",row.names=FALSE)
+
+
+
+
+
+
+
+
+
+
