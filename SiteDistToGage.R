@@ -1,6 +1,6 @@
 library(geosphere)
 
-setwd("P:/Projects/GitHub_Prj/FlowImpair")
+setwd("")
 camsites<-read.csv("TrailCamSites2018.csv",header=TRUE)
 
 ######Function to read in data from USGS data service correctly###############################
