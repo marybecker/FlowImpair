@@ -93,8 +93,10 @@ write.csv(rsdistmin,"rsdistmin.csv",row.names=FALSE)
 ###Map for Discussion########
 m<-  leaflet() %>% setView(lng = -72.669495, lat = 41.76371, zoom = 9)%>%
         addTiles()%>%
-        addCircleMarkers(lng = camsites$XLong, lat = camsites$YLat, 
-                         color = 'red',popup=sdistmin$Station_Name) %>% 
+        addCircleMarkers(lng = rsdistmin$XLong, lat = rsdistmin$YLat, 
+                         color = 'red',popup=paste("SName:",rsdistmin$Station_Name,"<br>",
+                                                   "CloseUSGSGage",
+                                                   rsdistmin$SiteName)) %>% 
         addCircleMarkers(lng = indexgage$SiteLongitude, lat = indexgage$SiteLatitude, 
                          color = 'blue',popup=indexgage$SiteName)%>%
         addLegend(position="bottomright",colors=c("red","blue"),
