@@ -1,6 +1,7 @@
 library(geosphere)
+library(leaflet)
 
-setwd("")
+setwd("/Users/tbecker/Documents/GitHub/FlowImpair")
 camsites<-read.csv("TrailCamSites2018.csv",header=TRUE)
 
 ######Function to read in data from USGS data service correctly###############################
@@ -89,7 +90,18 @@ rsdistmin<-merge(rsdistmin,camsites,by="STA_SEQ")
 rsdistmin<-merge(rsdistmin,indexgage,by.x="site_no",by.y="SiteNumber")
 write.csv(rsdistmin,"rsdistmin.csv",row.names=FALSE)
 
+###Map for Discussion########
+m<-  leaflet(sdistmin) %>% setView(lng = -72.669495, lat = 41.76371, zoom = 9)%>%
+        addTiles()%>%
+        addCircleMarkers(lng = sdistmin$XLong, lat = sdistmin$YLat, 
+                         color = 'red',popup=sdistmin$Station_Name) %>% 
+        addCircleMarkers(lng = indexgage$SiteLongitude, lat = indexgage$SiteLatitude, 
+                         color = 'blue',popup=indexgage$SiteName)%>%
+        addLegend(position="bottomright",colors=c("red","blue"),
+                  labels=c("CamSite","USGS Ref Gage"))
 
+m
+      
 
 
 
