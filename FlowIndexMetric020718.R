@@ -1,4 +1,4 @@
-setwd("P:/Projects/GitHub_Prj/FlowImpair")
+setwd("/Users/tbecker/Documents/GitHub/FlowImpair")
 
 library(ggplot2)
 library(lubridate)
@@ -12,10 +12,14 @@ fobs$JDay<-yday(fobs$Date)
 fobs$DurObs<-ifelse(fobs$Obs>3,1,0)
 #fobs<- fobs[complete.cases(fobs),]
 #fobs$ObsGraph<- fobs$Obs-1
-#fobs$Obs_CAT<-factor(fobs$Obs_CAT,levels=c("Dry","No Flow","Low","Normal","Above Normal","Flood"))
-fobs<- fobs[which(fobs$Month==7 |fobs$Month==8| fobs$Month==9 | fobs$Month==10),]#RG Period Only
-##Excluding Poland, Rocky Gutter & Beacon Hill Brook for paper
-fobs<- fobs[!(fobs$STA_SEQ==19708|fobs$STA_SEQ==19709|fobs$STA_SEQ==19600),]
+#fobs$Obs_CAT<-factor(fobs$Obs_CAT,levels=c("Dry","No Flow","Low",
+#"Normal","Above Normal","Flood"))
+
+#RG Period Only
+fobs<- fobs[which(fobs$Month==7 |fobs$Month==8| fobs$Month==9 | fobs$Month==10),]
+##Excluding Poland, Rocky Gutter, Beacon Hill Brook & Cobble Trib for paper
+fobs<- fobs[!(fobs$STA_SEQ==19708|fobs$STA_SEQ==19709|fobs$STA_SEQ==19600
+              |fobs$STA_SEQ==19460),]
 
 sites<- unique(fobs$STA_SEQ) ##list of stations
 site.name<-fobs[,1:2]
@@ -118,9 +122,14 @@ flowmetric<-merge(flowmetric,site.name,by="site")
 flowmetric$site<-factor(flowmetric$site,levels=c("19657","19460","15244",
                                                  "18513","16046","19141","15192",
                                                  "15193"))
-flowmetric$SName<-factor(flowmetric$SName,levels=c("Bunnell Brook","Cobble Brook Trib","Cobble Brook",
-                                                 "Womenshenuck Brook","Chidsey Brook","Mill River",
-                                                 "Honeypot Brook US","Honeypot Brook DS"))
+flowmetric$SName<-factor(flowmetric$SName,levels=c("Bunnell Brook",
+                                                   "Cobble Brook Trib",
+                                                   "Cobble Brook",
+                                                 "Womenshenuck Brook",
+                                                 "Chidsey Brook",
+                                                 "Mill River",
+                                                 "Honeypot Brook US",
+                                                 "Honeypot Brook DS"))
 write.csv(flowmetric,"flowmetrics.csv")
 
 ####################################################################################
@@ -241,7 +250,8 @@ p18<- ggplot(flowmetric,aes(x=SName,y=FN))+
 
 p19<- ggplot(flowmetric,aes(x=SName,y=FPL))+
   geom_bar(stat="identity")+
-  labs(title="Percent of Disconnected, No Flow or Dry Days - R&G",y="Percent of Days - R&G")+
+  labs(title="Percent of Disconnected, No Flow or Dry Days - R&G",
+       y="Percent of Days - R&G")+
   theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.75)),
         plot.title=element_text(size=rel(1)))
 
@@ -260,20 +270,23 @@ p21<- ggplot(flowmetric,aes(x=SName,y=G4F2))+
 
 p22<- ggplot(flowmetric,aes(x=SName,y=G4F3))+
   geom_bar(stat="identity")+
-  labs(title="Count of Disconnected Days - Reference Gages > 25th Percentile Flow",y="Days")+
+  labs(title="Count of Disconnected Days - Reference Gages 
+       > 25th Percentile Flow",y="Days")+
   theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.75)),
         plot.title=element_text(size=rel(1)))
 
 p23<- ggplot(flowmetric,aes(x=SName,y=G4FL))+
   geom_bar(stat="identity")+
-  labs(title="Count of Disconnected, No Flow or Dry Days - Reference Gages > 25th Percentile Flow",
+  labs(title="Count of Disconnected, No Flow or Dry Days - 
+       Reference Gages > 25th Percentile Flow",
        y="Days")+
   theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.75)),
         plot.title=element_text(size=rel(1)))
 
 p24<- ggplot(flowmetric,aes(x=SName,y=G4FPL))+
   geom_bar(stat="identity")+
-  labs(title="Percent of Disconnected, No Flow or Dry Days - Reference Gages > 25th Percentile Flow",
+  labs(title="Percent of Disconnected, No Flow or Dry Days - Reference Gages 
+       > 25th Percentile Flow",
        y="Percent of Days - R&G")+
   theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.75)),
         plot.title=element_text(size=rel(1)))
@@ -281,32 +294,37 @@ p24<- ggplot(flowmetric,aes(x=SName,y=G4FPL))+
 ##Frequency compared to closest reference gages Plots##
 p25<- ggplot(flowmetric,aes(x=SName,y=GNF1))+
   geom_bar(stat="identity")+
-  labs(title="Count of Dry Days - Nearby Reference Gages > 25th Percentile Flow",y="Days")+
+  labs(title="Count of Dry Days - Nearby Reference Gages 
+       > 25th Percentile Flow",y="Days")+
   theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.75)),
         plot.title=element_text(size=rel(1)))
 
 p26<- ggplot(flowmetric,aes(x=SName,y=GNF2))+
   geom_bar(stat="identity")+
-  labs(title="Count of No Flow Days - Nearby Reference Gages > 25th Percentile Flow",y="Days")+
+  labs(title="Count of No Flow Days - Nearby Reference Gages 
+       > 25th Percentile Flow",y="Days")+
   theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.75)),
         plot.title=element_text(size=rel(1)))
 
 p27<- ggplot(flowmetric,aes(x=SName,y=GNF3))+
   geom_bar(stat="identity")+
-  labs(title="Count of Disconnected Days - Nearby Reference Gages > 25th Percentile Flow",y="Days")+
+  labs(title="Count of Disconnected Days - 
+       Nearby Reference Gages > 25th Percentile Flow",y="Days")+
   theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.75)),
         plot.title=element_text(size=rel(1)))
 
 p28<- ggplot(flowmetric,aes(x=SName,y=GNFL))+
   geom_bar(stat="identity")+
-  labs(title="Count of Disconnected, No Flow or Dry Days - Nearby Reference Gages > 25th Percentile Flow",
+  labs(title="Count of Disconnected, No Flow or Dry Days - 
+       Nearby Reference Gages > 25th Percentile Flow",
        y="Days")+
   theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.75)),
         plot.title=element_text(size=rel(1)))
 
 p29<- ggplot(flowmetric,aes(x=SName,y=GNFPL))+
   geom_bar(stat="identity")+
-  labs(title="Percent of Disconnected, No Flow or Dry Days - Nearby Reference Gages > 25th Percentile Flow",
+  labs(title="Percent of Disconnected, No Flow or Dry Days - 
+       Nearby Reference Gages > 25th Percentile Flow",
        y="Percent of Days - R&G")+
   theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.75)),
         plot.title=element_text(size=rel(1)))
@@ -421,7 +439,8 @@ fmh<- as.matrix(fmh)
 library(lattice)
 levelplot(fmh,at=seq(0,1,0.1),
           col.regions=terrain.colors(100),scales=list(cex=0.4),
-          xlab="Flow Metric",ylab="Sites",main="Metrics Scaled 0 - 1(Little Flow Impact to Highly Flow Impacted)")
+          xlab="Flow Metric",ylab="Sites",main="Metrics Scaled 0 - 1
+          (Little Flow Impact to Highly Flow Impacted)")
 
 
 #########For Paper##############################################
@@ -439,7 +458,8 @@ p1<- ggplot(flowmetric,aes(x=SName,y=MA))+
 
 p30<- ggplot(flowmetric,aes(x=SName,y=T1))+
   geom_bar(stat="identity")+
-  labs(title="Timing Metric - Julian Day of First Disconnected, No Flow or Dry Days Observation",
+  labs(title="Timing Metric - Julian Day of First Disconnected, 
+       No Flow or Dry Days Observation",
        y="Julian Day")+
   theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.3)),
         plot.title=element_text(size=rel(0.6)),axis.text.x=element_blank(),
@@ -456,7 +476,8 @@ p9<- ggplot(flowmetric,aes(x=SName,y=D3))+
 
 p19<- ggplot(flowmetric,aes(x=SName,y=FPL))+
   geom_bar(stat="identity")+
-  labs(title="Frequency Metric - Percent of Disconnected, No Flow or Dry Days",y="Percent of Days - R&G")+
+  labs(title="Frequency Metric - Percent of Disconnected, No Flow or Dry Days",
+       y="Percent of Days - R&G")+
   theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.3)),
         plot.title=element_text(size=rel(0.6)),axis.text.x=element_blank(),
         axis.title.y=element_text(size=rel(0.6)))+
@@ -464,7 +485,9 @@ p19<- ggplot(flowmetric,aes(x=SName,y=FPL))+
 
 p27<- ggplot(flowmetric,aes(x=SName,y=GNF3))+
   geom_bar(stat="identity")+
-  labs(title="Frequency Gage Metric - Count of Disconnected Days - Nearby Reference Gages > 25th Percentile Flow",y="Days")+
+  labs(title="Frequency Gage Metric - Count of Disconnected Days 
+       - Nearby Reference Gages > 25th Percentile Flow",
+       y="Days")+
   theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.5)),
         plot.title=element_text(size=rel(0.6)),
         axis.title.y=element_text(size=rel(0.6)))+
@@ -474,6 +497,33 @@ p27<- ggplot(flowmetric,aes(x=SName,y=GNF3))+
 tiff(file="ExampleMetrics.tiff",width=1600,height=2000,res=300)
 multiplot(p1,p30,p9,p19,p27,cols=1)
 dev.off()
+
+####DURATION LINE PLOT########
+site.name<-read.csv("sitename.csv",header=TRUE)
+site.name<-site.name[order(site.name$N),]
+
+fobs<-merge(fobs,site.name[,1:2],by="STA_SEQ")
+fobs$DurObs<-ifelse(fobs$DurObs==0,"Disconnected","Connected")
+fobs$DurObs<-factor(fobs$DurObs)
+
+cols<-c("Disconnected"="red","Connected"="blue")
+
+fconnectdur<-
+ggplot()+
+  geom_line(data=fobs[fobs$N==1,],aes(Date,N,colour=DurObs,group=1),size=4)+
+  geom_line(data=fobs[fobs$N==2,],aes(Date,N,colour=DurObs,group=1),size=4)+
+  geom_line(data=fobs[fobs$N==3,],aes(Date,N,colour=DurObs,group=1),size=4)+
+  geom_line(data=fobs[fobs$N==4,],aes(Date,N,colour=DurObs,group=1),size=4)+
+  geom_line(data=fobs[fobs$N==5,],aes(Date,N,colour=DurObs,group=1),size=4)+
+  geom_line(data=fobs[fobs$N==6,],aes(Date,N,colour=DurObs,group=1),size=4)+
+  geom_line(data=fobs[fobs$N==7,],aes(Date,N,colour=DurObs,group=1),size=4)+
+  scale_y_continuous(breaks=1:7,labels=site.name[,3])+
+  labs(colour="Flow",x=NULL,y=NULL)+
+  scale_colour_manual(values=cols)+
+  theme(legend.position="bottom")
+
+ggsave("fconnectdur.jpeg",fconnectdur)
+  
 
 
 
