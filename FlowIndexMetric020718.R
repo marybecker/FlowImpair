@@ -503,10 +503,10 @@ site.name<-read.csv("sitename.csv",header=TRUE)
 site.name<-site.name[order(site.name$N),]
 
 fobs<-merge(fobs,site.name[,1:2],by="STA_SEQ")
-fobs$DurObs<-ifelse(fobs$DurObs==0,"Disconnected","Connected")
+fobs$DurObs<-ifelse(fobs$Obs==1,"Dry",ifelse(fobs$DurObs==0,"Disconnected","Connected"))
 fobs$DurObs<-factor(fobs$DurObs)
 
-cols<-c("Disconnected"="red","Connected"="blue")
+cols<-c("Disconnected"="gray40","Connected"="gray80","Dry"="black")
 
 fconnectdur<-
 ggplot()+
@@ -520,7 +520,8 @@ ggplot()+
   scale_y_continuous(breaks=1:7,labels=site.name[,3])+
   labs(colour="Flow",x=NULL,y=NULL)+
   scale_colour_manual(values=cols)+
-  theme(legend.position="bottom")
+  theme(legend.position="bottom",
+        panel.background = element_rect(fill = "white", colour = "grey50"))
 
 ggsave("fconnectdur.jpeg",fconnectdur)
   
