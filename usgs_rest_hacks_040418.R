@@ -2,7 +2,7 @@ library(ggplot2)
 library(lubridate)
 library(reshape2)
 
-setwd("")
+setwd("P:/Projects/GitHub_Prj/FlowImpair")
 indexgage<-read.csv("usgsindexgage.csv",header=TRUE)
 indexgage$SiteNumber<-paste("0",indexgage$SiteNumber,sep="")
 
@@ -171,9 +171,9 @@ xend <- max(findex$sdate)+30
 p<- ggplot()+
       geom_line(data=findex, aes(sdate,index))+
       geom_line(data=findexRG, aes(sdate,index,size=1))+
-      labs(y="",x="",title="Flow Conditions At 12 Least Disturbed Gages 2017")+
+      labs(y="",x="")+
       scale_y_continuous(limits=c(1,7),breaks=c(2,4,6),labels=c("Low","Normal","High"))+
-      theme(legend.position="none")
+      theme(legend.position="none",panel.background=element_rect(fill="white",colour="black"))
 
 p + geom_rect(data=rects,aes(xmin=xstart,xmax=xend,
                            ymin = ystart, ymax = yend),alpha = 0.3,fill=rects$col)+

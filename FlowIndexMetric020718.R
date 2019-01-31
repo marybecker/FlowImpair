@@ -1,4 +1,4 @@
-setwd("/Users/tbecker/Documents/GitHub/FlowImpair")
+setwd("P:/Projects/GitHub_Prj/FlowImpair")
 
 library(ggplot2)
 library(lubridate)
@@ -119,11 +119,10 @@ colnames(flowmetric)<-c("MA","M50","M25","M75","MASept","M50Sept",
                         "T1","T2")
 flowmetric$site<- row.names(flowmetric)
 flowmetric<-merge(flowmetric,site.name,by="site")
-flowmetric$site<-factor(flowmetric$site,levels=c("19657","19460","15244",
+flowmetric$site<-factor(flowmetric$site,levels=c("19657","15244",
                                                  "18513","16046","19141","15192",
                                                  "15193"))
 flowmetric$SName<-factor(flowmetric$SName,levels=c("Bunnell Brook",
-                                                   "Cobble Brook Trib",
                                                    "Cobble Brook",
                                                  "Womenshenuck Brook",
                                                  "Chidsey Brook",
@@ -374,129 +373,178 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
     }
   }
 }
-#########################################
 
-pdf(file="Magnitudeplots1.pdf",width=11,height=8)
-multiplot(p1,p2,p3,cols=1)
-dev.off()
+#####PLOTS FOR PAPER##############################
+##Magnitude plots##
 
-pdf(file="Magnitudeplots2.pdf",width=11,height=8)
-multiplot(p4,p5,p6,cols=1)
-dev.off()
-
-pdf(file="Durationplots1.pdf",width=11,height=8)
-multiplot(p7,p8,p9,cols=1)
-dev.off()
-
-pdf(file="Durationplots2.pdf",width=11,height=8)
-multiplot(p10,p11,p12,cols=1)
-dev.off()
-
-pdf(file="Frequencyplots1.pdf",width=11,height=8)
-multiplot(p13,p14,p15,cols=1)
-dev.off()
-
-pdf(file="Frequencyplots2.pdf",width=11,height=8)
-multiplot(p16,p17,cols=1)
-dev.off()
-
-pdf(file="Frequencyplots3.pdf",width=11,height=8)
-multiplot(p18,p19,cols=1)
-dev.off()
-
-pdf(file="GageFrequencyplots1.pdf",width=11,height=8)
-multiplot(p20,p21,p22,cols=1)
-dev.off()
-
-pdf(file="GageFrequencyplots2.pdf",width=11,height=8)
-multiplot(p23,p24,cols=1)
-dev.off()
-
-pdf(file="NGageFrequencyplots1.pdf",width=11,height=8)
-multiplot(p25,p26,p27,cols=1)
-dev.off()
-
-pdf(file="NGageFrequencyplots2.pdf",width=11,height=8)
-multiplot(p28,p29,cols=1)
-dev.off()
-
-pdf(file="Timing.pdf",width=11,height=8)
-multiplot(p30,p31,cols=1)
-dev.off()
-
-#############Scaled Metric Plot Heatmap##########################
-#################################################################
-
-fmh<- flowmetric[,c("DN","F1","G4FPL","MA")]
-#fmh<-as.data.frame(t(fmh))
-row.names(fmh)<-flowmetric$SName
-
-fmh[,1]<-1-(fmh[,1]/123)
-fmh[,2]<-fmh[,2]/123
-fmh[,4]<-ifelse((1-(fmh[,4]/4))<0,0,(1-(fmh[,4]/4)))
-fmh<- as.matrix(fmh)
-
-library(lattice)
-levelplot(fmh,at=seq(0,1,0.1),
-          col.regions=terrain.colors(100),scales=list(cex=0.4),
-          xlab="Flow Metric",ylab="Sites",main="Metrics Scaled 0 - 1
-          (Little Flow Impact to Highly Flow Impacted)")
-
-
-#########For Paper##############################################
-################################################################
-
-flowmetric<-flowmetric[c(1:6,8),]
-
-p1<- ggplot(flowmetric,aes(x=SName,y=MA))+
+mp1<- ggplot(flowmetric,aes(x=SName,y=MA))+
   geom_bar(stat="identity")+
-  labs(title="Magnitude Metric - Average Flow Category",y="Category")+
-  theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.6)),
-        plot.title=element_text(size=rel(0.6)),axis.text.x=element_blank(),
-        axis.title.y=element_text(size=rel(0.6)))+
+  labs(title="Average Flow Category - R&G",y="Category")+
+  theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.5)),
+        plot.title=element_text(size=rel(0.5)),axis.text.x=element_blank(),
+        axis.title.y=element_text(size=rel(0.5)))+
   annotate("text", x=0.75,y=4.5,label="A",size=3)
 
-p30<- ggplot(flowmetric,aes(x=SName,y=T1))+
+mp2<- ggplot(flowmetric,aes(x=SName,y=MASept),axis.text=element_text(size=rel(0.5)))+
   geom_bar(stat="identity")+
-  labs(title="Timing Metric - Julian Day of First Disconnected, 
-       No Flow or Dry Days Observation",
-       y="Julian Day")+
-  theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.3)),
-        plot.title=element_text(size=rel(0.6)),axis.text.x=element_blank(),
-        axis.title.y=element_text(size=rel(0.6)))+
-  annotate("text", x=0.75,y=225,label="B",size=3)
-
-p9<- ggplot(flowmetric,aes(x=SName,y=D3))+
-  geom_bar(stat="identity")+
-  labs(title="Duration Metric - Mean Duration of Consecutive Disconnected Days",y="Days")+
-  theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.6)),
-        plot.title=element_text(size=rel(0.6)),axis.text.x=element_blank(),
-        axis.title.y=element_text(size=rel(0.6)))+
-  annotate("text", x=0.75,y=5,label="C",size=3)
-
-p19<- ggplot(flowmetric,aes(x=SName,y=FPL))+
-  geom_bar(stat="identity")+
-  labs(title="Frequency Metric - Percent of Disconnected, No Flow or Dry Days",
-       y="Percent of Days - R&G")+
-  theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.3)),
-        plot.title=element_text(size=rel(0.6)),axis.text.x=element_blank(),
-        axis.title.y=element_text(size=rel(0.6)))+
-  annotate("text", x=0.75,y=0.6,label="D",size=3)
-
-p27<- ggplot(flowmetric,aes(x=SName,y=GNF3))+
-  geom_bar(stat="identity")+
-  labs(title="Frequency Gage Metric - Count of Disconnected Days 
-       - Nearby Reference Gages > 25th Percentile Flow",
-       y="Days")+
+  labs(title="Average September Flow Category",y="Category")+
   theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.5)),
-        plot.title=element_text(size=rel(0.6)),
-        axis.title.y=element_text(size=rel(0.6)))+
-  annotate("text", x=0.75,y=20,label="E",size=3)
+        plot.title=element_text(size=rel(0.5)),
+        axis.title.y=element_text(size=rel(0.5)))+
+  annotate("text", x=0.75,y=4.5,label="B",size=3)
 
-
-tiff(file="ExampleMetrics.tiff",width=1600,height=2000,res=300)
-multiplot(p1,p30,p9,p19,p27,cols=1)
+dpi=600
+tiff("MagnitudePlots.tiff",width=6*dpi,height=5*dpi,res=dpi)
+multiplot(mp1,mp2,cols=1)
 dev.off()
+
+
+##Frequency Plots######
+fp1<- ggplot(flowmetric,aes(x=SName,y=F1))+
+  geom_bar(stat="identity")+
+  labs(title="Count of Dry Days - R&G",y="Days")+
+  theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.5)),
+        plot.title=element_text(size=rel(0.5)),axis.title.y=element_text(size=rel(0.5)),
+        axis.text.x=element_blank())+
+  annotate("text", x=0.75,y=45,label="A",size=3)
+
+fp2<- ggplot(flowmetric,aes(x=SName,y=FPL))+
+  geom_bar(stat="identity")+
+  labs(title="Percent of Disconnected, No Flow or Dry Days - R&G",
+       y="Percent of Days")+
+  theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.5)),
+        plot.title=element_text(size=rel(0.5)),axis.title.y=element_text(size=rel(0.5)),
+        axis.text.x=element_blank())+
+  annotate("text", x=0.75,y=0.7,label="B",size=3)
+
+fp3<- ggplot(flowmetric,aes(x=SName,y=G4FPL))+
+  geom_bar(stat="identity")+
+  labs(title="Percent of Disconnected, No Flow or Dry Days - Reference Gages > 25th Percentile Flow",
+       y="Percent of Days")+
+  theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.5)),
+        plot.title=element_text(size=rel(0.5)),axis.title.y=element_text(size=rel(0.5)),
+        axis.text.x=element_blank())+
+  annotate("text", x=0.75,y=0.25,label="C",size=3)
+
+fp4<- ggplot(flowmetric,aes(x=SName,y=GNFPL))+
+  geom_bar(stat="identity")+
+  labs(title="Percent of Disconnected, No Flow or Dry Days - Nearby Reference Gages > 25th Percentile Flow",
+       y="Percent of Days")+
+  theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.5)),
+        plot.title=element_text(size=rel(0.5)),axis.title.y=element_text(size=rel(0.5)))+
+  annotate("text", x=0.75,y=0.035,label="D",size=3)
+
+dpi=600
+tiff("FrequencyPlots.tiff",width=6*dpi,height=5*dpi,res=dpi)
+multiplot(fp1,fp2,fp3,fp4,cols=1)
+dev.off()
+
+
+# ####ALL PLOTS######################################
+# 
+# pdf(file="Magnitudeplots1.pdf",width=11,height=8)
+# multiplot(p1,p2,p3,cols=1)
+# dev.off()
+# 
+# pdf(file="Magnitudeplots2.pdf",width=11,height=8)
+# multiplot(p4,p5,p6,cols=1)
+# dev.off()
+# 
+# pdf(file="Durationplots1.pdf",width=11,height=8)
+# multiplot(p7,p8,p9,cols=1)
+# dev.off()
+# 
+# pdf(file="Durationplots2.pdf",width=11,height=8)
+# multiplot(p10,p11,p12,cols=1)
+# dev.off()
+# 
+# pdf(file="Frequencyplots1.pdf",width=11,height=8)
+# multiplot(p13,p14,p15,cols=1)
+# dev.off()
+# 
+# pdf(file="Frequencyplots2.pdf",width=11,height=8)
+# multiplot(p16,p17,cols=1)
+# dev.off()
+# 
+# pdf(file="Frequencyplots3.pdf",width=11,height=8)
+# multiplot(p18,p19,cols=1)
+# dev.off()
+# 
+# pdf(file="GageFrequencyplots1.pdf",width=11,height=8)
+# multiplot(p20,p21,p22,cols=1)
+# dev.off()
+# 
+# pdf(file="GageFrequencyplots2.pdf",width=11,height=8)
+# multiplot(p23,p24,cols=1)
+# dev.off()
+# 
+# pdf(file="NGageFrequencyplots1.pdf",width=11,height=8)
+# multiplot(p25,p26,p27,cols=1)
+# dev.off()
+# 
+# pdf(file="NGageFrequencyplots2.pdf",width=11,height=8)
+# multiplot(p28,p29,cols=1)
+# dev.off()
+# 
+# pdf(file="Timing.pdf",width=11,height=8)
+# multiplot(p30,p31,cols=1)
+# dev.off()
+
+
+# #########For Paper Old##############################################
+# ################################################################
+# 
+# flowmetric<-flowmetric[c(1:6,8),]
+# 
+# p1<- ggplot(flowmetric,aes(x=SName,y=MA))+
+#   geom_bar(stat="identity")+
+#   labs(title="Magnitude Metric - Average Flow Category",y="Category")+
+#   theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.6)),
+#         plot.title=element_text(size=rel(0.6)),axis.text.x=element_blank(),
+#         axis.title.y=element_text(size=rel(0.6)))+
+#   annotate("text", x=0.75,y=4.5,label="A",size=3)
+# 
+# p30<- ggplot(flowmetric,aes(x=SName,y=T1))+
+#   geom_bar(stat="identity")+
+#   labs(title="Timing Metric - Julian Day of First Disconnected, 
+#        No Flow or Dry Days Observation",
+#        y="Julian Day")+
+#   theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.3)),
+#         plot.title=element_text(size=rel(0.6)),axis.text.x=element_blank(),
+#         axis.title.y=element_text(size=rel(0.6)))+
+#   annotate("text", x=0.75,y=225,label="B",size=3)
+# 
+# p9<- ggplot(flowmetric,aes(x=SName,y=D3))+
+#   geom_bar(stat="identity")+
+#   labs(title="Duration Metric - Mean Duration of Consecutive Disconnected Days",y="Days")+
+#   theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.6)),
+#         plot.title=element_text(size=rel(0.6)),axis.text.x=element_blank(),
+#         axis.title.y=element_text(size=rel(0.6)))+
+#   annotate("text", x=0.75,y=5,label="C",size=3)
+# 
+# p19<- ggplot(flowmetric,aes(x=SName,y=FPL))+
+#   geom_bar(stat="identity")+
+#   labs(title="Frequency Metric - Percent of Disconnected, No Flow or Dry Days",
+#        y="Percent of Days - R&G")+
+#   theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.3)),
+#         plot.title=element_text(size=rel(0.6)),axis.text.x=element_blank(),
+#         axis.title.y=element_text(size=rel(0.6)))+
+#   annotate("text", x=0.75,y=0.6,label="D",size=3)
+# 
+# p27<- ggplot(flowmetric,aes(x=SName,y=GNF3))+
+#   geom_bar(stat="identity")+
+#   labs(title="Frequency Gage Metric - Count of Disconnected Days 
+#        - Nearby Reference Gages > 25th Percentile Flow",
+#        y="Days")+
+#   theme(axis.title.x=element_blank(),axis.text=element_text(size=rel(0.5)),
+#         plot.title=element_text(size=rel(0.6)),
+#         axis.title.y=element_text(size=rel(0.6)))+
+#   annotate("text", x=0.75,y=20,label="E",size=3)
+# 
+# 
+# tiff(file="ExampleMetrics.tiff",width=1600,height=2000,res=300)
+# multiplot(p1,p30,p9,p19,p27,cols=1)
+# dev.off()
 
 ####DURATION LINE PLOT########
 site.name<-read.csv("sitename.csv",header=TRUE)
