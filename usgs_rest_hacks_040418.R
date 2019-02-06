@@ -2,7 +2,7 @@ library(ggplot2)
 library(lubridate)
 library(reshape2)
 
-setwd("P:/Projects/GitHub_Prj/FlowImpair")
+setwd("/home/mkozlak/Projects/GitHub/FlowImpair")
 indexgage<-read.csv("usgsindexgage.csv",header=TRUE)
 indexgage$SiteNumber<-paste("0",indexgage$SiteNumber,sep="")
 
@@ -188,20 +188,22 @@ findexRG<- findexRG[which(findexRG$month=="07"|findexRG$month=="08"|
 rects <- data.frame(ystart = c(-Inf,3,5), 
                     yend = c(3,5,Inf), 
                     cat = c("low flow","normal","high"),
-                    col=c("blue","purple","green"))
+                    col=c("white","gray30","gray85"))
 
 xstart <- min(findexRG$sdate)-30  ##Specified for plot to ensure rects coverage
 xend <- max(findexRG$sdate)+30
 
 p<- ggplot()+
   geom_line(data=findexRG, aes(sdate,index))+
-  labs(y="",x="",title="Flow Conditions At 12 Least Disturbed Gages 
-       during Rearing and Growth Bioperiod 2017")+
+  geom_line(data=gfindex, aes(sdate,gage,colour="red"))+##Added Bunnell to Compare
+  labs(y="Stream Flow Index",x=NULL,title="Flow Conditions At 12 Least Disturbed Gages during 
+       Rearing and Growth Bioperiod 2017 (Bunnell - Red Line)")+
   scale_y_continuous(limits=c(1,7),breaks=c(2,4,6),labels=c("Low","Normal","High"))
 
 p + geom_rect(data=rects,aes(xmin=xstart,xmax=xend,
                              ymin = ystart, ymax = yend),alpha = 0.3,fill=rects$col)+
-  coord_cartesian(xlim=with(findexRG,range(sdate)))
+  coord_cartesian(xlim=with(findexRG,range(sdate)))+
+  theme(legend.position="none",panel.background=element_rect(fill="white",colour="black"))
 
 #######SF Index Individual Gage#####################
 gage<-'01188000'

@@ -1,4 +1,4 @@
-setwd("P:/Projects/GitHub_Prj/FlowImpair")
+setwd("/home/mkozlak/Projects/GitHub/FlowImpair")
 
 library(ggplot2)
 library(lubridate)
@@ -558,20 +558,22 @@ cols<-c("Disconnected"="gray40","Connected"="gray80","Dry"="black")
 
 fconnectdur<-
 ggplot()+
-  geom_line(data=fobs[fobs$N==1,],aes(Date,N,colour=DurObs,group=1),size=4)+
-  geom_line(data=fobs[fobs$N==2,],aes(Date,N,colour=DurObs,group=1),size=4)+
-  geom_line(data=fobs[fobs$N==3,],aes(Date,N,colour=DurObs,group=1),size=4)+
-  geom_line(data=fobs[fobs$N==4,],aes(Date,N,colour=DurObs,group=1),size=4)+
-  geom_line(data=fobs[fobs$N==5,],aes(Date,N,colour=DurObs,group=1),size=4)+
-  geom_line(data=fobs[fobs$N==6,],aes(Date,N,colour=DurObs,group=1),size=4)+
-  geom_line(data=fobs[fobs$N==7,],aes(Date,N,colour=DurObs,group=1),size=4)+
+  geom_line(data=fobs[fobs$N==1,],aes(Date,N,colour=DurObs,group=1),size=10)+
+  geom_line(data=fobs[fobs$N==2,],aes(Date,N,colour=DurObs,group=1),size=10)+
+  geom_line(data=fobs[fobs$N==3,],aes(Date,N,colour=DurObs,group=1),size=10)+
+  geom_line(data=fobs[fobs$N==4,],aes(Date,N,colour=DurObs,group=1),size=10)+
+  geom_line(data=fobs[fobs$N==5,],aes(Date,N,colour=DurObs,group=1),size=10)+
+  geom_line(data=fobs[fobs$N==6,],aes(Date,N,colour=DurObs,group=1),size=10)+
+  geom_line(data=fobs[fobs$N==7,],aes(Date,N,colour=DurObs,group=1),size=10)+
   scale_y_continuous(breaks=1:7,labels=site.name[,3])+
   labs(colour="Flow",x=NULL,y=NULL)+
   scale_colour_manual(values=cols)+
   theme(legend.position="bottom",
         panel.background = element_rect(fill = "white", colour = "grey50"))
 
-ggsave("fconnectdur.jpeg",fconnectdur)
+fconnectdur
+
+ggsave("fconnectdur.png",fconnectdur)
   
 
 
