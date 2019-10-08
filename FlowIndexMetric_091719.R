@@ -466,7 +466,7 @@ ggplot()+
   geom_line(data=fobs[fobs$N==6,],aes(Date,N,colour=DurObs,group=1),size=10)+
   geom_line(data=fobs[fobs$N==7,],aes(Date,N,colour=DurObs,group=1),size=10)+
   scale_y_continuous(breaks=1:7,labels=site.name[,3])+
-  labs(colour="Flow",x=NULL,y=NULL)+
+  labs(colour=NULL,x=NULL,y=NULL)+
   scale_colour_manual(values=cols)+
   theme(legend.position="bottom",
         panel.background = element_rect(fill = "white", colour = "grey50"))
