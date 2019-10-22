@@ -83,14 +83,14 @@ FPL<-(nrow(site[which(site$Obs<4),]))/(dim(site)[1])
 G4F1<- nrow(site[which(site$index>3&site$Obs==1),])
 G4F2<- nrow(site[which(site$index>3&site$Obs==2),])
 G4F3<- nrow(site[which(site$index>3&site$Obs==3),])
-G4FL<- nrow(site[which(site$index>4&site$Obs<4),])
-G4FPL<- (nrow(site[which(site$index>4&site$Obs<4),]))/(dim(site)[1])
+G4FL<- nrow(site[which(site$index>3&site$Obs<4),])
+G4FPL<- (nrow(site[which(site$index>3&site$Obs<4),]))/(dim(site)[1])
 
 GNF1<- nrow(site[which(site$ngindex>3&site$Obs==1),])
 GNF2<- nrow(site[which(site$ngindex>3&site$Obs==2),])
 GNF3<- nrow(site[which(site$ngindex>3&site$Obs==3),])
-GNFL<- nrow(site[which(site$ngindex>4&site$Obs<4),])
-GNFPL<- (nrow(site[which(site$ngindex>4&site$Obs<4),]))/(dim(site)[1])
+GNFL<- nrow(site[which(site$ngindex>3&site$Obs<4),])
+GNFPL<- (nrow(site[which(site$ngindex>3&site$Obs<4),]))/(dim(site)[1])
 
 ###Timing###
 
@@ -491,15 +491,20 @@ cols<-c("Reference Gages At or Above 25th Percentile Flows
                 and Flow Disconnected"="cadetblue",
         "Reference Gages Below 25th Percentile Flows"="gray25")
 
-  
+xstart <- min(fobs$Date)-30  ##Specified for plot to ensure rects coverage
+xend <- max(fobs$Date)+30
+ 
 flowobswithgageinfo<-
-ggplot(fobs,aes(Date,Obs,colour=NF,group=1))+
-  geom_line(size=1.5)+
+ggplot(data=fobs)+
+  geom_rect(data=rects,aes(xmin=xstart,xmax=xend,
+                           ymin = 0, ymax = 3),alpha = 0.3,fill="gray")+
+  geom_line(aes(Date,Obs,colour=NF,group=N),size=1.5)+
   facet_grid(rows = vars(N))+
+  coord_cartesian(xlim=with(fobs,range(Date)))+
   labs(colour=NULL,x=NULL,y="Category")+
   scale_colour_manual(values=cols)+
   theme(legend.position="bottom",
-        panel.background = element_rect(colour = "grey75"))
+        panel.background = element_rect(fill="white",colour = "grey75"))
 
 flowobswithgageinfo
 
