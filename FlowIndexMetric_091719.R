@@ -1,4 +1,4 @@
-setwd("P:/Projects/GitHub_Prj/FlowImpair")
+setwd("/home/mkozlak/Documents/Projects/GitHub/FlowImpair")
 
 library(ggplot2)
 library(lubridate)
@@ -443,12 +443,17 @@ dev.off()
 
 
 ####DURATION LINE PLOT########
-site.name<-read.csv("sitename.csv",header=TRUE)
-site.name<-site.name[order(site.name$N),]
+# site.name<-read.csv("sitename.csv",header=TRUE)
+# site.name<-site.name[order(site.name$N),]
 
-fobs<-merge(fobs,site.name[,1:2],by="STA_SEQ")
+site.name<- as.data.frame(sort(factor(unique(fobs$Station_Name))))
+colnames(site.name)[1]<-"Station_Name"
+site.name$N<-as.numeric(row.names(site.name))
+
+fobs<-merge(fobs,site.name[,1:2],by="Station_Name")
 fobs$DurObs<-ifelse(fobs$Obs==1,"Dry",ifelse(fobs$DurObs==0,"Disconnected","Connected"))
 fobs$DurObs<-factor(fobs$DurObs)
+
 
 #f1a340
 #f7f7f7
@@ -465,7 +470,7 @@ ggplot()+
   geom_line(data=fobs[fobs$N==5,],aes(Date,N,colour=DurObs,group=1),size=10)+
   geom_line(data=fobs[fobs$N==6,],aes(Date,N,colour=DurObs,group=1),size=10)+
   geom_line(data=fobs[fobs$N==7,],aes(Date,N,colour=DurObs,group=1),size=10)+
-  scale_y_continuous(breaks=1:7,labels=site.name[,3])+
+  scale_y_reverse(breaks=1:7,labels=site.name[,1])+
   labs(colour=NULL,x=NULL,y=NULL)+
   scale_colour_manual(values=cols)+
   theme(legend.position="bottom",
@@ -477,39 +482,39 @@ ggsave("fconnectdur.jpg",fconnectdur,dpi=600)
 
 
 ####USGS FLow Compare LINE plot###########
-fobs$NF<-ifelse(fobs$index>3,"Reference Gages At or Above 25th Percentile Flows",
-                "Reference Gages Below 25th Percentile Flows")
 fobs$NF<-ifelse(fobs$index>3 & fobs$Obs <3,"Reference Gages At or Above 25th Percentile Flows 
                 and Flow Disconnected","Reference Gages Below 25th Percentile Flows")
-
 fobs$NF<-factor(fobs$NF)
-
-cols<-c("Reference Gages At or Above 25th Percentile Flows"="cadetblue",
-        "Reference Gages Below 25th Percentile Flows"="gray25")
-
 cols<-c("Reference Gages At or Above 25th Percentile Flows 
                 and Flow Disconnected"="cadetblue",
         "Reference Gages Below 25th Percentile Flows"="gray25")
+
+# fobs$NF<-ifelse(fobs$index>3,"Reference Gages At or Above 25th Percentile Flows",
+#                 "Reference Gages Below 25th Percentile Flows")
+# cols<-c("Reference Gages At or Above 25th Percentile Flows"="cadetblue",
+#         "Reference Gages Below 25th Percentile Flows"="gray25")
 
 xstart <- min(fobs$Date)-30  ##Specified for plot to ensure rects coverage
 xend <- max(fobs$Date)+30
  
 flowobswithgageinfo<-
 ggplot(data=fobs)+
-  geom_rect(data=rects,aes(xmin=xstart,xmax=xend,
+  geom_rect(aes(xmin=xstart,xmax=xend,
                            ymin = 0, ymax = 3),alpha = 0.3,fill="gray")+
   geom_line(aes(Date,Obs,colour=NF,group=N),size=1.5)+
-  facet_grid(rows = vars(N))+
+  facet_grid(rows = vars(Station_Name))+
   coord_cartesian(xlim=with(fobs,range(Date)))+
   labs(colour=NULL,x=NULL,y="Category")+
   scale_colour_manual(values=cols)+
   theme(legend.position="bottom",
-        panel.background = element_rect(fill="white",colour = "grey75"))
+        panel.background = element_rect(fill="white",colour = "grey75"),
+        strip.text.y=element_text(angle =0),strip.background = element_rect(fill="white"))
 
 flowobswithgageinfo
 
 ggsave("flowobswithgageinfo.jpg",flowobswithgageinfo)
 
+###Alt Flow Over POR with lines#############################
 
 cols<-c("Disconnected"="#b2abd2","Connected"="#0571b0","Dry"="#ca0020")
 
